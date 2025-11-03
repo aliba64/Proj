@@ -1,15 +1,39 @@
-import { Search } from "lucide-react";
+import { Search, User, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+
+type PageType = "home" | "catalog" | "seasonal" | "recipe" | "user" | "about" | "news" | "contacts" | "faq" | "support" | "feedback" | "ingredients";
 
 interface HeaderProps {
-  onNavigate: (page: "home" | "catalog" | "seasonal") => void;
+  onNavigate: (page: PageType) => void;
   onLoginClick: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onCategorySelect?: (category: string) => void;
 }
 
-export function Header({ onNavigate, onLoginClick, searchQuery, onSearchChange }: HeaderProps) {
+export function Header({ onNavigate, onLoginClick, searchQuery, onSearchChange, onCategorySelect }: HeaderProps) {
+  const categories = [
+    "Первые блюда",
+    "Салаты",
+    "Основные блюда",
+    "Гарниры",
+    "Паста",
+    "Азиатская кухня",
+    "Десерты",
+    "Завтраки",
+    "Выпечка",
+    "Напитки",
+    "Закуски",
+    "Вегетарианское",
+  ];
+
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4">
@@ -21,21 +45,45 @@ export function Header({ onNavigate, onLoginClick, searchQuery, onSearchChange }
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => onNavigate("catalog")}
-              className="text-gray-700 hover:text-gray-900"
-            >
-              Каталог
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="text-gray-700 hover:text-gray-900 flex items-center gap-1">
+                  Каталог
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem onClick={() => onNavigate("catalog")}>
+                  <span className="font-medium">Все категории</span>
+                </DropdownMenuItem>
+                <div className="border-t my-1" />
+                {categories.map((category) => (
+                  <DropdownMenuItem
+                    key={category}
+                    onClick={() => {
+                      onNavigate("home");
+                      if (onCategorySelect) {
+                        setTimeout(() => onCategorySelect(category), 100);
+                      }
+                    }}
+                  >
+                    {category}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <button
               onClick={() => onNavigate("seasonal")}
               className="text-gray-700 hover:text-gray-900"
             >
               Сезонное меню
             </button>
-            <a href="#" className="text-gray-700 hover:text-gray-900">
+            <button
+              onClick={() => onNavigate("ingredients")}
+              className="text-gray-700 hover:text-gray-900"
+            >
               Поиск по ингредиентам
-            </a>
+            </button>
           </nav>
 
           {/* Search */}
@@ -52,14 +100,24 @@ export function Header({ onNavigate, onLoginClick, searchQuery, onSearchChange }
             </div>
           </div>
 
-          {/* Login */}
-          <Button
-            variant="ghost"
-            className="flex-shrink-0"
-            onClick={onLoginClick}
-          >
-            Войти
-          </Button>
+          {/* User / Login */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-shrink-0"
+              onClick={() => onNavigate("user")}
+            >
+              <User className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="flex-shrink-0"
+              onClick={onLoginClick}
+            >
+              Войти
+            </Button>
+          </div>
         </div>
       </div>
     </header>
