@@ -1,6 +1,6 @@
-import { Youtube, Send, Instagram } from "lucide-react";
+import { Youtube, Send, Instagram, Shield } from "lucide-react";
 
-type PageType = "home" | "catalog" | "seasonal" | "recipe" | "user" | "about" | "news" | "contacts" | "faq" | "support" | "feedback";
+type PageType = "home" | "catalog" | "seasonal" | "recipe" | "user" | "about" | "news" | "contacts" | "faq" | "support" | "feedback" | "admin";
 
 interface FooterProps {
   onNavigate: (page: PageType) => void;
@@ -125,8 +125,20 @@ export function Footer({ onNavigate }: FooterProps) {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
-          © 2025 Zhevaka. Все права защищены.
+        <div className="mt-12 pt-8 border-t">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              © 2025 Zhevaka. Все права защищены.
+            </p>
+            <button
+              onClick={() => onNavigate("admin")}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              title="Админ-панель (для демонстрации)"
+            >
+              <Shield className="w-4 h-4" />
+              Админ-панель
+            </button>
+          </div>
         </div>
       </div>
     </footer>

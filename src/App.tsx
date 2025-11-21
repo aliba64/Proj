@@ -17,6 +17,8 @@ import { SupportPage } from "./components/SupportPage";
 import { FeedbackPage } from "./components/FeedbackPage";
 import { SeasonalPage } from "./components/SeasonalPage";
 import { IngredientSearchPage } from "./components/IngredientSearchPage";
+import { AdminPanel } from "./components/AdminPanel";
+import { Toaster } from "./components/ui/sonner";
 import { recipes, Recipe } from "./data/recipes";
 import backgroundImage from "figma:asset/8b1ef3edb21f919ae1f2c7d0d1340aceb5b126f7.png";
 
@@ -32,7 +34,8 @@ type PageType =
   | "faq"
   | "support"
   | "feedback"
-  | "ingredients";
+  | "ingredients"
+  | "admin";
 
 // Add popularity data to recipes (simulated)
 const recipesWithPopularity: (Recipe & {
@@ -330,12 +333,16 @@ export default function App() {
 
       {currentPage === "feedback" && <FeedbackPage />}
 
+      {currentPage === "admin" && <AdminPanel onBack={() => setCurrentPage("home")} />}
+
       <Footer onNavigate={setCurrentPage} />
 
       <LoginDialog
         open={loginOpen}
         onOpenChange={setLoginOpen}
       />
+
+      <Toaster />
     </div>
   );
 }

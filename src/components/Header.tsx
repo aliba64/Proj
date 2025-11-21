@@ -1,4 +1,4 @@
-import { Search, User, ChevronDown } from "lucide-react";
+import { Search, User, ChevronDown, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-type PageType = "home" | "catalog" | "seasonal" | "recipe" | "user" | "about" | "news" | "contacts" | "faq" | "support" | "feedback" | "ingredients";
+type PageType = "home" | "catalog" | "seasonal" | "recipe" | "user" | "about" | "news" | "contacts" | "faq" | "support" | "feedback" | "ingredients" | "admin";
 
 interface HeaderProps {
   onNavigate: (page: PageType) => void;
