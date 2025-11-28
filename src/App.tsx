@@ -18,6 +18,7 @@ import { FeedbackPage } from "./components/FeedbackPage";
 import { SeasonalPage } from "./components/SeasonalPage";
 import { IngredientSearchPage } from "./components/IngredientSearchPage";
 import { AdminPanel } from "./components/AdminPanel";
+import { PaginationControls } from "./components/PaginationControls";
 import { Toaster } from "./components/ui/sonner";
 import { recipes, Recipe } from "./data/recipes";
 import backgroundImage from "figma:asset/8b1ef3edb21f919ae1f2c7d0d1340aceb5b126f7.png";
@@ -57,6 +58,7 @@ export default function App() {
     (typeof recipesWithPopularity)[0] | null
   >(null);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [favoriteRecipes, setFavoriteRecipes] = useState<Set<number>>(new Set());
   const [recipeStats, setRecipeStats] = useState<
     Map<number, { views: number; favorites: number }>
   >(
@@ -67,6 +69,8 @@ export default function App() {
       ]),
     ),
   );
+  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [currentPageNum, setCurrentPageNum] = useState(1);
 
   // Helper function to convert time string to minutes
   const timeToMinutes = (timeStr: string): number => {
@@ -204,6 +208,26 @@ export default function App() {
   const handleCategorySelect = (category: string) => {
     setCategoryFilter(category);
     setSearchQuery("");
+    setCurrentPageNum(1);
+  };
+
+  const handleTagClick = (tag: string) => {
+    setSearchQuery(tag);
+    setCategoryFilter("");
+    setCurrentPage("home");
+    setCurrentPageNum(1);
+  };
+
+  const toggleFavorite = (recipeId: number) => {
+    setFavoriteRecipes(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(recipeId)) {
+        newFavorites.delete(recipeId);
+      } else {
+        newFavorites.add(recipeId);
+      }
+      return newFavorites;
+    });
   };
 
   // Clear category filter when navigating away from home
@@ -212,6 +236,11 @@ export default function App() {
       setCategoryFilter("");
     }
   }, [currentPage]);
+
+  // Reset page number when filters change
+  useEffect(() => {
+    setCurrentPageNum(1);
+  }, [searchQuery, categoryFilter, activeFilter]);
 
   // Show recipe detail page
   if (currentPage === "recipe" && selectedRecipe) {
@@ -272,15 +301,35 @@ export default function App() {
               </div>
             )}
             {filteredRecipes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                {filteredRecipes.map((recipe) => (
-                  <RecipeCard
-                    key={recipe.id}
-                    {...recipe}
-                    onClick={() => handleRecipeClick(recipe)}
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {filteredRecipes
+                    .slice((currentPageNum - 1) * itemsPerPage, currentPageNum * itemsPerPage)
+                    .map((recipe) => (
+                      <RecipeCard
+                        key={recipe.id}
+                        {...recipe}
+                        isFavorite={favoriteRecipes.has(recipe.id)}
+                        onToggleFavorite={() => toggleFavorite(recipe.id)}
+                        onClick={() => handleRecipeClick(recipe)}
+                        onTagClick={handleTagClick}
+                      />
+                    ))}
+                </div>
+                {filteredRecipes.length > itemsPerPage && (
+                  <PaginationControls
+                    currentPage={currentPageNum}
+                    totalPages={Math.ceil(filteredRecipes.length / itemsPerPage)}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={filteredRecipes.length}
+                    onPageChange={setCurrentPageNum}
+                    onItemsPerPageChange={(value) => {
+                      setItemsPerPage(value);
+                      setCurrentPageNum(1);
+                    }}
                   />
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-16 bg-white rounded-lg shadow">
                 <p className="text-gray-600 mb-2">
@@ -307,19 +356,40 @@ export default function App() {
         </>
       )}
 
-      {currentPage === "catalog" && <CatalogPage />}
+      {currentPage === "catalog" && (
+        <CatalogPage 
+          onCategoryClick={(category) => {
+            handleCategorySelect(category);
+            setCurrentPage("home");
+          }}
+        />
+      )}
 
       {currentPage === "seasonal" && (
-        <SeasonalPage onRecipeClick={handleRecipeClick} />
+        <SeasonalPage 
+          onRecipeClick={handleRecipeClick}
+          favoriteRecipes={favoriteRecipes}
+          onToggleFavorite={toggleFavorite}
+          onTagClick={handleTagClick}
+        />
       )}
 
       {currentPage === "ingredients" && (
         <IngredientSearchPage
           onRecipeClick={handleRecipeClick}
+          favoriteRecipes={favoriteRecipes}
+          onToggleFavorite={toggleFavorite}
+          onTagClick={handleTagClick}
         />
       )}
 
-      {currentPage === "user" && <UserPage />}
+      {currentPage === "user" && (
+        <UserPage 
+          favoriteRecipes={favoriteRecipes}
+          onToggleFavorite={toggleFavorite}
+          onTagClick={handleTagClick}
+        />
+      )}
 
       {currentPage === "about" && <AboutPage />}
 

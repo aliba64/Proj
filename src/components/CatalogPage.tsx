@@ -2,7 +2,8 @@ import { Card } from "./ui/card";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Search } from "lucide-react";
 import { Input } from "./ui/input";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { PaginationControls } from "./PaginationControls";
 
 interface Category {
   id: number;
@@ -99,16 +100,32 @@ const categories: Category[] = [
   },
 ];
 
-export function CatalogPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+interface CatalogPageProps {
+  onCategoryClick?: (categoryName: string) => void;
+}
 
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+export function CatalogPage({ onCategoryClick }: CatalogPageProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [currentPageNum, setCurrentPageNum] = useState(1);
+
+  const filteredCategories = useMemo(() => {
+    return categories.filter((category) =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  const displayCategories = useMemo(() => {
+    return filteredCategories.slice(
+      (currentPageNum - 1) * itemsPerPage,
+      currentPageNum * itemsPerPage
+    );
+  }, [filteredCategories, currentPageNum, itemsPerPage]);
 
   const handleCategoryClick = (categoryName: string) => {
-    console.log("Выбрана категория:", categoryName);
-    // Здесь можно добавить логику фильтрации рецептов по категории
+    if (onCategoryClick) {
+      onCategoryClick(categoryName);
+    }
   };
 
   return (
@@ -128,43 +145,62 @@ export function CatalogPage() {
               placeholder="Поиск по категориям..."
               className="pl-10 bg-white"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPageNum(1);
+              }}
             />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {filteredCategories.map((category) => (
-          <Card
-            key={category.id}
-            className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow bg-white"
-            onClick={() => handleCategoryClick(category.name)}
-          >
-            <div className="relative aspect-video bg-gray-100">
-              <ImageWithFallback
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h3 className="text-white mb-1 text-sm">{category.name}</h3>
-                <p className="text-xs text-white/90 mb-1">
-                  {category.count} рецептов
-                </p>
-                {category.description && (
-                  <p className="text-xs text-white/80">
-                    {category.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      {displayCategories.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {displayCategories.map((category) => (
+              <Card
+                key={category.id}
+                className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow bg-white"
+                onClick={() => handleCategoryClick(category.name)}
+              >
+                <div className="relative aspect-video bg-gray-100">
+                  <ImageWithFallback
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="text-white mb-1 text-sm">{category.name}</h3>
+                    <p className="text-xs text-white/90 mb-1">
+                      {category.count} рецептов
+                    </p>
+                    {category.description && (
+                      <p className="text-xs text-white/80">
+                        {category.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
 
-      {filteredCategories.length === 0 && (
+          {filteredCategories.length > itemsPerPage && (
+            <PaginationControls
+              currentPage={currentPageNum}
+              totalPages={Math.ceil(filteredCategories.length / itemsPerPage)}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredCategories.length}
+              onPageChange={setCurrentPageNum}
+              onItemsPerPageChange={(value) => {
+                setItemsPerPage(value);
+                setCurrentPageNum(1);
+              }}
+            />
+          )}
+        </>
+      ) : (
         <div className="text-center py-16 bg-white rounded-lg shadow">
           <p className="text-gray-600">
             Категории не найдены по запросу "{searchQuery}"

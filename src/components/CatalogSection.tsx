@@ -65,10 +65,15 @@ const categories: Category[] = [
   },
 ];
 
-export function CatalogSection() {
+interface CatalogSectionProps {
+  onCategoryClick?: (categoryName: string) => void;
+}
+
+export function CatalogSection({ onCategoryClick }: CatalogSectionProps) {
   const handleCategoryClick = (categoryName: string) => {
-    console.log("Выбрана категория:", categoryName);
-    // Здесь можно добавить логику фильтрации рецептов по категории
+    if (onCategoryClick) {
+      onCategoryClick(categoryName);
+    }
   };
 
   return (

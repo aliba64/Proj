@@ -476,22 +476,24 @@ export function AdminRecipes() {
               {actionType === "reject" && "Отклонить рецепт?"}
               {actionType === "delete" && "Удалить рецепт?"}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedRecipe && (
-                <div className="mt-2 space-y-2">
-                  <p>
-                    <strong>Название:</strong> {selectedRecipe.title}
-                  </p>
-                  <p>
-                    <strong>Автор:</strong> {selectedRecipe.author}
-                  </p>
-                  {actionType === "delete" && (
-                    <p className="text-red-600 mt-4">
-                      Это действие нельзя отменить!
+            <AlertDialogDescription asChild>
+              <div className="mt-2 space-y-2">
+                {selectedRecipe && (
+                  <>
+                    <p>
+                      <strong>Название:</strong> {selectedRecipe.title}
                     </p>
-                  )}
-                </div>
-              )}
+                    <p>
+                      <strong>Автор:</strong> {selectedRecipe.author}
+                    </p>
+                    {actionType === "delete" && (
+                      <p className="text-red-600 mt-4">
+                        Это действие нельзя отменить!
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
